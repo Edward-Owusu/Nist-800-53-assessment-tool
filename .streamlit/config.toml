@@ -1,0 +1,8 @@
+# Theme for this dashboard: dark navy with light blue accents, distinct from the other tools in the series.
+[theme]
+base = "dark"
+primaryColor = "#60A5FA"
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#E2E8F0"
+font = "sans serif"
