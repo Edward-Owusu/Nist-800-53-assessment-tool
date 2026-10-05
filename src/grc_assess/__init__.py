@@ -3,5 +3,5 @@
 from .catalog import load_catalog, load_rules
 from .engine import assess
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __all__ = ["assess", "load_catalog", "load_rules", "__version__"]

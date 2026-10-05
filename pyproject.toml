@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "grc-assess"
-version = "0.1.0"
+version = "0.1.1"
 description = "Automated NIST SP 800-53 Rev. 5 control assessment for small and mid-sized organizations"
 readme = "README.md"
 requires-python = ">=3.10"

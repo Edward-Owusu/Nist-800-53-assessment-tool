@@ -71,7 +71,7 @@ st.subheader(f"{result.organization}")
 st.caption(f"{result.sector}. {result.baseline.title()} baseline.")
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Weighted risk exposure", f"{result.risk_score:.0f} / 100", result.risk_rating, delta_color="off")
+c1.metric(f"Risk exposure: {result.risk_rating}", f"{result.risk_score:.0f} / 100")
 c2.metric("Automated checks passed",
           "n/a" if result.compliance_pct is None else f"{result.compliance_pct:.1f}%")
 c3.metric("Failed checks", rc["FAIL"])

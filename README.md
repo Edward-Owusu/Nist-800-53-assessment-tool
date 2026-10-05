@@ -3,6 +3,7 @@
 [![tests](https://github.com/Edward-Owusu/Nist-800-53-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/Edward-Owusu/Nist-800-53-assessment-tool/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23148159.svg)](https://doi.org/10.5281/zenodo.23148159)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://nist-800-53-assessment.streamlit.app)
 
 An open-source tool that checks an organization's system configuration against the **NIST SP 800-53 Rev. 5** low, moderate, or high control baseline and produces a prioritized, auditor-ready remediation report.
 
@@ -65,6 +66,8 @@ Open `reports/example_manufacturer_weak_moderate.html` in a browser for the full
 pip install -r requirements.txt
 streamlit run app/streamlit_app.py
 ```
+
+Try the hosted version at https://nist-800-53-assessment.streamlit.app, or run it locally:
 
 ### Use in automation
 
