@@ -1,0 +1,50 @@
+{
+  "_comment": "Blank template. Replace example values with your organization's data. Remove any section you cannot provide; related checks will be reported as not assessed.",
+  "organization": {
+    "name": "Your organization",
+    "sector": "Your sector",
+    "employees": 0,
+    "baseline": "moderate"
+  },
+  "identity": {
+    "password_policy": {
+      "min_length": 12,
+      "lockout_threshold": 5,
+      "session_lock_minutes": 15
+    },
+    "accounts": [
+      {"username": "example.user", "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 0, "shared": false}
+    ]
+  },
+  "assets": [
+    {"hostname": "EXAMPLE-01", "type": "server", "os": "Operating system name", "os_supported": true, "logging_enabled": true, "av_enabled": true, "disk_encryption": true, "stores_sensitive_data": false, "max_critical_patch_age_days": 0, "public_ports": [], "unnecessary_services": []}
+  ],
+  "logging": {
+    "retention_days": 90,
+    "review_frequency_days": 7,
+    "centralized_siem": false
+  },
+  "vulnerability_management": {
+    "scan_frequency_days": 30
+  },
+  "network": {
+    "firewall_default_deny": true,
+    "min_tls_version": "1.2"
+  },
+  "remote_access": {
+    "vpn_mfa": true
+  },
+  "backup": {
+    "frequency_hours": 24,
+    "offline_or_immutable_copy": true,
+    "last_restore_test_days_ago": 0
+  },
+  "incident_response": {
+    "plan_exists": true,
+    "plan_last_reviewed_days_ago": 0
+  },
+  "governance": {
+    "training_completion_rate": 1.0,
+    "baseline_config_documented": true
+  }
+}

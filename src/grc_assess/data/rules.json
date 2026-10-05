@@ -1,0 +1,238 @@
+{
+  "version": "1.0.0",
+  "description": "Automated checks mapped to NIST SP 800-53 Rev. 5 controls. Thresholds marked as organization-defined parameters (ODPs) reflect common practice and can be tuned per organization.",
+  "rules": [
+    {
+      "id": "IAM-01",
+      "title": "MFA enforced on all privileged accounts",
+      "controls": ["IA-2(1)"],
+      "severity": "critical",
+      "check": {"type": "each", "collection": "identity.accounts", "where": {"privileged": true, "enabled": true}, "field": "mfa_enabled", "op": "eq", "value": true, "item_label": "username"},
+      "remediation": "Enroll every enabled administrative account in phishing-resistant MFA and block privileged sign-in without it."
+    },
+    {
+      "id": "IAM-02",
+      "title": "MFA enforced on standard user accounts",
+      "controls": ["IA-2(2)"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "identity.accounts", "where": {"privileged": false, "enabled": true}, "field": "mfa_enabled", "op": "eq", "value": true, "item_label": "username"},
+      "remediation": "Roll out MFA to all standard users, starting with email and remote-access applications."
+    },
+    {
+      "id": "IAM-03",
+      "title": "Inactive accounts are disabled (90-day ODP)",
+      "controls": ["AC-2(3)", "AC-2"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "identity.accounts", "where": {"enabled": true}, "field": "days_since_last_login", "op": "lte", "value": 90, "item_label": "username"},
+      "remediation": "Disable accounts with no sign-in for more than 90 days and add a recurring access review."
+    },
+    {
+      "id": "IAM-04",
+      "title": "No shared or generic user accounts",
+      "controls": ["AC-2", "IA-2"],
+      "severity": "medium",
+      "check": {"type": "each", "collection": "identity.accounts", "where": {"enabled": true}, "field": "shared", "op": "eq", "value": false, "item_label": "username"},
+      "remediation": "Replace shared accounts with individually assigned accounts so every action is attributable to one person."
+    },
+    {
+      "id": "IAM-05",
+      "title": "Privileged accounts limited to 10% of enabled accounts (ODP)",
+      "controls": ["AC-6"],
+      "severity": "medium",
+      "check": {"type": "ratio", "collection": "identity.accounts", "base_where": {"enabled": true}, "where": {"privileged": true}, "op": "lte", "value": 0.10},
+      "remediation": "Review administrative group membership and remove rights that are not required for the job role."
+    },
+    {
+      "id": "IAM-06",
+      "title": "Account lockout after 1 to 5 failed attempts",
+      "controls": ["AC-7"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "identity.password_policy.lockout_threshold", "op": "between", "value": [1, 5]},
+      "remediation": "Set the account lockout threshold to 5 or fewer consecutive failed sign-in attempts."
+    },
+    {
+      "id": "IAM-07",
+      "title": "Minimum password length of 12 characters (ODP)",
+      "controls": ["IA-5"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "identity.password_policy.min_length", "op": "gte", "value": 12},
+      "remediation": "Raise the minimum password length to at least 12 characters and allow passphrases."
+    },
+    {
+      "id": "IAM-08",
+      "title": "Device lock after 15 minutes of inactivity or less",
+      "controls": ["AC-11"],
+      "severity": "low",
+      "check": {"type": "value", "path": "identity.password_policy.session_lock_minutes", "op": "between", "value": [1, 15]},
+      "remediation": "Apply a device lock policy of 15 minutes or less through group policy or MDM."
+    },
+    {
+      "id": "LOG-01",
+      "title": "Security event logging enabled on all systems",
+      "controls": ["AU-2"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "assets", "field": "logging_enabled", "op": "eq", "value": true, "item_label": "hostname"},
+      "remediation": "Enable security event logging (authentication, privilege use, configuration changes) on every system."
+    },
+    {
+      "id": "LOG-02",
+      "title": "Audit logs retained for at least 90 days (ODP)",
+      "controls": ["AU-11"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "logging.retention_days", "op": "gte", "value": 90},
+      "remediation": "Extend log retention to at least 90 days online, with longer archival where contracts or regulations require it."
+    },
+    {
+      "id": "LOG-03",
+      "title": "Audit logs reviewed at least weekly",
+      "controls": ["AU-6"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "logging.review_frequency_days", "op": "lte", "value": 7},
+      "remediation": "Assign an owner and schedule a weekly log review, or automate alerting for high-risk events."
+    },
+    {
+      "id": "MON-01",
+      "title": "Centralized security monitoring in place",
+      "controls": ["SI-4", "AU-6"],
+      "severity": "high",
+      "check": {"type": "value", "path": "logging.centralized_siem", "op": "eq", "value": true},
+      "remediation": "Forward logs to a central platform (SIEM or managed detection service) with alerting on suspicious activity."
+    },
+    {
+      "id": "VUL-01",
+      "title": "Vulnerability scans run at least every 30 days",
+      "controls": ["RA-5"],
+      "severity": "high",
+      "check": {"type": "value", "path": "vulnerability_management.scan_frequency_days", "op": "lte", "value": 30},
+      "remediation": "Schedule authenticated vulnerability scans of all systems at least monthly."
+    },
+    {
+      "id": "VUL-02",
+      "title": "Critical security patches applied within 15 days (ODP)",
+      "controls": ["SI-2"],
+      "severity": "critical",
+      "check": {"type": "each", "collection": "assets", "field": "max_critical_patch_age_days", "op": "lte", "value": 15, "item_label": "hostname"},
+      "remediation": "Patch critical vulnerabilities within 15 days, prioritizing internet-facing systems and known-exploited vulnerabilities."
+    },
+    {
+      "id": "VUL-03",
+      "title": "No unsupported operating systems in use",
+      "controls": ["SA-22", "CM-2"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "assets", "field": "os_supported", "op": "eq", "value": true, "item_label": "hostname"},
+      "remediation": "Upgrade or replace systems running end-of-life software; isolate any that cannot be replaced yet."
+    },
+    {
+      "id": "MAL-01",
+      "title": "Endpoint malware protection on workstations and servers",
+      "controls": ["SI-3"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "assets", "where": {"type": ["workstation", "server"]}, "field": "av_enabled", "op": "eq", "value": true, "item_label": "hostname"},
+      "remediation": "Deploy and centrally manage endpoint protection (EDR or antivirus) on every workstation and server."
+    },
+    {
+      "id": "NET-01",
+      "title": "No remote administration ports exposed to the internet",
+      "controls": ["SC-7", "AC-17"],
+      "severity": "critical",
+      "check": {"type": "each", "collection": "assets", "field": "public_ports", "op": "contains_none", "value": [22, 23, 3389, 5900], "item_label": "hostname"},
+      "remediation": "Close SSH, Telnet, RDP, and VNC to the internet; require VPN with MFA for remote administration."
+    },
+    {
+      "id": "NET-02",
+      "title": "Perimeter firewall uses default-deny",
+      "controls": ["SC-7"],
+      "severity": "high",
+      "check": {"type": "value", "path": "network.firewall_default_deny", "op": "eq", "value": true},
+      "remediation": "Configure inbound firewall rules to deny by default and allow only documented business traffic."
+    },
+    {
+      "id": "CRY-01",
+      "title": "Encryption in transit uses TLS 1.2 or higher",
+      "controls": ["SC-8", "SC-13"],
+      "severity": "high",
+      "check": {"type": "value", "path": "network.min_tls_version", "op": "in", "value": ["1.2", "1.3"]},
+      "remediation": "Disable SSL and TLS 1.0/1.1 and require TLS 1.2 or 1.3 on all services."
+    },
+    {
+      "id": "CRY-02",
+      "title": "Disk encryption on systems storing sensitive data",
+      "controls": ["SC-28", "SC-13"],
+      "severity": "high",
+      "check": {"type": "each", "collection": "assets", "where": {"stores_sensitive_data": true}, "field": "disk_encryption", "op": "eq", "value": true, "item_label": "hostname"},
+      "remediation": "Enable full-disk encryption (for example BitLocker or FileVault) on every system that stores sensitive data."
+    },
+    {
+      "id": "REM-01",
+      "title": "Remote access requires VPN with MFA",
+      "controls": ["AC-17", "IA-2(2)"],
+      "severity": "high",
+      "check": {"type": "value", "path": "remote_access.vpn_mfa", "op": "eq", "value": true},
+      "remediation": "Require MFA on the VPN or remote-access gateway for every user."
+    },
+    {
+      "id": "BCP-01",
+      "title": "Backups performed at least daily",
+      "controls": ["CP-9"],
+      "severity": "high",
+      "check": {"type": "value", "path": "backup.frequency_hours", "op": "lte", "value": 24},
+      "remediation": "Schedule backups of critical systems and data at least every 24 hours."
+    },
+    {
+      "id": "BCP-02",
+      "title": "An offline or immutable backup copy exists",
+      "controls": ["CP-9", "CP-10"],
+      "severity": "critical",
+      "check": {"type": "value", "path": "backup.offline_or_immutable_copy", "op": "eq", "value": true},
+      "remediation": "Keep at least one backup copy offline or immutable so ransomware cannot encrypt or delete it."
+    },
+    {
+      "id": "BCP-03",
+      "title": "Backup restore tested within the last 180 days",
+      "controls": ["CP-9(1)", "CP-10"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "backup.last_restore_test_days_ago", "op": "lte", "value": 180},
+      "remediation": "Perform and document a test restore of critical systems at least twice a year."
+    },
+    {
+      "id": "IR-01",
+      "title": "Incident response plan exists",
+      "controls": ["IR-8", "IR-4"],
+      "severity": "high",
+      "check": {"type": "value", "path": "incident_response.plan_exists", "op": "eq", "value": true},
+      "remediation": "Write an incident response plan covering roles, contacts, escalation, and recovery steps."
+    },
+    {
+      "id": "IR-02",
+      "title": "Incident response plan reviewed within the last year",
+      "controls": ["IR-8"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "incident_response.plan_last_reviewed_days_ago", "op": "lte", "value": 365},
+      "remediation": "Review and update the incident response plan annually and after any significant incident."
+    },
+    {
+      "id": "TRN-01",
+      "title": "Security awareness training completion of 95% or more",
+      "controls": ["AT-2"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "governance.training_completion_rate", "op": "gte", "value": 0.95},
+      "remediation": "Require annual security awareness training, including phishing, and follow up with non-completers."
+    },
+    {
+      "id": "CFG-01",
+      "title": "Baseline configurations are documented",
+      "controls": ["CM-2", "CM-6"],
+      "severity": "medium",
+      "check": {"type": "value", "path": "governance.baseline_config_documented", "op": "eq", "value": true},
+      "remediation": "Document secure baseline configurations (for example CIS Benchmarks) for each system type."
+    },
+    {
+      "id": "CFG-02",
+      "title": "Unnecessary services are disabled",
+      "controls": ["CM-7"],
+      "severity": "medium",
+      "check": {"type": "each", "collection": "assets", "field": "unnecessary_services", "op": "is_empty", "item_label": "hostname"},
+      "remediation": "Disable services that are not needed for the system's business function."
+    }
+  ]
+}

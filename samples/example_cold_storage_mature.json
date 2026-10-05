@@ -1,0 +1,63 @@
+{
+  "_comment": "Synthetic data for demonstration only. Not based on any real organization.",
+  "organization": {
+    "name": "Northfield Cold Logistics (fictional)",
+    "sector": "Food and agriculture, refrigerated warehousing",
+    "employees": 140,
+    "baseline": "moderate"
+  },
+  "identity": {
+    "password_policy": {
+      "min_length": 14,
+      "lockout_threshold": 5,
+      "session_lock_minutes": 10
+    },
+    "accounts": [
+      {"username": "adm.lchen",   "enabled": true, "privileged": true,  "mfa_enabled": true, "days_since_last_login": 1,  "shared": false},
+      {"username": "k.adeyemi",   "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 2,  "shared": false},
+      {"username": "p.ward",      "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 4,  "shared": false},
+      {"username": "d.romero",    "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 1,  "shared": false},
+      {"username": "h.kim",       "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 12, "shared": false},
+      {"username": "e.mensah",    "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 3,  "shared": false},
+      {"username": "c.foster",    "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 6,  "shared": false},
+      {"username": "b.silva",     "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 2,  "shared": false},
+      {"username": "n.ali",       "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 9,  "shared": false},
+      {"username": "g.hughes",    "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 1,  "shared": false},
+      {"username": "old.temp",    "enabled": false, "privileged": false, "mfa_enabled": false, "days_since_last_login": 300, "shared": false}
+    ]
+  },
+  "assets": [
+    {"hostname": "DC01",        "type": "server",      "os": "Windows Server 2022", "os_supported": true, "logging_enabled": true, "av_enabled": true, "disk_encryption": true,  "stores_sensitive_data": true,  "max_critical_patch_age_days": 6,  "public_ports": [],    "unnecessary_services": []},
+    {"hostname": "WMS01",       "type": "server",      "os": "Ubuntu 24.04 LTS",    "os_supported": true, "logging_enabled": true, "av_enabled": true, "disk_encryption": true,  "stores_sensitive_data": true,  "max_critical_patch_age_days": 4,  "public_ports": [443], "unnecessary_services": []},
+    {"hostname": "WS-DISPATCH", "type": "workstation", "os": "Windows 11",          "os_supported": true, "logging_enabled": true, "av_enabled": true, "disk_encryption": true,  "stores_sensitive_data": false, "max_critical_patch_age_days": 8,  "public_ports": [],    "unnecessary_services": []},
+    {"hostname": "REFRIG-CTRL", "type": "ot_device",   "os": "Embedded",            "os_supported": true, "logging_enabled": true, "disk_encryption": false, "stores_sensitive_data": false, "max_critical_patch_age_days": 14, "public_ports": [],    "unnecessary_services": []}
+  ],
+  "logging": {
+    "retention_days": 365,
+    "review_frequency_days": 1,
+    "centralized_siem": true
+  },
+  "vulnerability_management": {
+    "scan_frequency_days": 7
+  },
+  "network": {
+    "firewall_default_deny": true,
+    "min_tls_version": "1.2"
+  },
+  "remote_access": {
+    "vpn_mfa": true
+  },
+  "backup": {
+    "frequency_hours": 12,
+    "offline_or_immutable_copy": true,
+    "last_restore_test_days_ago": 60
+  },
+  "incident_response": {
+    "plan_exists": true,
+    "plan_last_reviewed_days_ago": 120
+  },
+  "governance": {
+    "training_completion_rate": 0.91,
+    "baseline_config_documented": true
+  }
+}

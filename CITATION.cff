@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "grc_assess: Automated NIST SP 800-53 Rev. 5 Control Assessment for Small and Mid-Sized Organizations"
+authors:
+  - family-names: Owusu
+    given-names: Edward
+version: 0.1.0
+date-released: 2026-10-04
+license: MIT
+repository-code: "https://github.com/Edward-Owusu/Nist-800-53-assessment-tool"
+keywords:
+  - NIST SP 800-53
+  - cybersecurity
+  - governance risk and compliance
+  - small business
+  - critical infrastructure

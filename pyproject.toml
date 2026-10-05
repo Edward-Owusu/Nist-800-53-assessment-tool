@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grc-assess"
+version = "0.1.0"
+description = "Automated NIST SP 800-53 Rev. 5 control assessment for small and mid-sized organizations"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Edward Owusu"}]
+keywords = ["nist", "800-53", "grc", "compliance", "cybersecurity", "audit", "risk"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Security",
+  "Intended Audience :: Information Technology",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.37", "pandas>=2.0"]
+
+[project.scripts]
+grc-assess = "grc_assess.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+grc_assess = ["data/*.json"]

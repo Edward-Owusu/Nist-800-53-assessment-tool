@@ -1,0 +1,212 @@
+{
+  "_comment": "Synthetic data for demonstration only. Not based on any real organization.",
+  "organization": {
+    "name": "Riverbend Components (fictional)",
+    "sector": "Manufacturing, automotive parts supplier",
+    "employees": 85,
+    "baseline": "moderate"
+  },
+  "identity": {
+    "password_policy": {
+      "min_length": 8,
+      "lockout_threshold": 10,
+      "session_lock_minutes": 15
+    },
+    "accounts": [
+      {
+        "username": "j.miller",
+        "enabled": true,
+        "privileged": true,
+        "mfa_enabled": false,
+        "days_since_last_login": 2,
+        "shared": false
+      },
+      {
+        "username": "it.admin",
+        "enabled": true,
+        "privileged": true,
+        "mfa_enabled": false,
+        "days_since_last_login": 1,
+        "shared": true
+      },
+      {
+        "username": "a.nguyen",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": true,
+        "days_since_last_login": 3,
+        "shared": false
+      },
+      {
+        "username": "r.patel",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": false,
+        "days_since_last_login": 5,
+        "shared": false
+      },
+      {
+        "username": "s.okafor",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": true,
+        "days_since_last_login": 1,
+        "shared": false
+      },
+      {
+        "username": "floor.kiosk",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": false,
+        "days_since_last_login": 0,
+        "shared": true
+      },
+      {
+        "username": "t.brooks",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": false,
+        "days_since_last_login": 212,
+        "shared": false
+      },
+      {
+        "username": "contractor.hv",
+        "enabled": true,
+        "privileged": true,
+        "mfa_enabled": false,
+        "days_since_last_login": 140,
+        "shared": false
+      },
+      {
+        "username": "m.garcia",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": true,
+        "days_since_last_login": 7,
+        "shared": false
+      },
+      {
+        "username": "former.emp1",
+        "enabled": false,
+        "privileged": false,
+        "mfa_enabled": false,
+        "days_since_last_login": 400,
+        "shared": false
+      }
+    ]
+  },
+  "assets": [
+    {
+      "hostname": "DC01",
+      "type": "server",
+      "os": "Windows Server 2019",
+      "os_supported": true,
+      "logging_enabled": true,
+      "av_enabled": true,
+      "disk_encryption": true,
+      "stores_sensitive_data": true,
+      "max_critical_patch_age_days": 11,
+      "public_ports": [],
+      "unnecessary_services": []
+    },
+    {
+      "hostname": "ERP01",
+      "type": "server",
+      "os": "Windows Server 2012 R2",
+      "os_supported": false,
+      "logging_enabled": false,
+      "av_enabled": true,
+      "disk_encryption": false,
+      "stores_sensitive_data": true,
+      "max_critical_patch_age_days": 300,
+      "public_ports": [
+        443,
+        3389
+      ],
+      "unnecessary_services": [
+        "Telnet",
+        "FTP"
+      ]
+    },
+    {
+      "hostname": "FS01",
+      "type": "server",
+      "os": "Windows Server 2022",
+      "os_supported": true,
+      "logging_enabled": true,
+      "av_enabled": true,
+      "disk_encryption": true,
+      "stores_sensitive_data": true,
+      "max_critical_patch_age_days": 12,
+      "public_ports": [],
+      "unnecessary_services": []
+    },
+    {
+      "hostname": "WS-OFFICE1",
+      "type": "workstation",
+      "os": "Windows 11",
+      "os_supported": true,
+      "logging_enabled": true,
+      "av_enabled": true,
+      "disk_encryption": true,
+      "stores_sensitive_data": false,
+      "max_critical_patch_age_days": 9,
+      "public_ports": [],
+      "unnecessary_services": []
+    },
+    {
+      "hostname": "WS-SHOP2",
+      "type": "workstation",
+      "os": "Windows 10",
+      "os_supported": false,
+      "logging_enabled": false,
+      "av_enabled": false,
+      "disk_encryption": false,
+      "stores_sensitive_data": false,
+      "max_critical_patch_age_days": 60,
+      "public_ports": [],
+      "unnecessary_services": [
+        "Remote Registry"
+      ]
+    },
+    {
+      "hostname": "CNC-HMI-3",
+      "type": "ot_device",
+      "os": "Embedded",
+      "os_supported": true,
+      "logging_enabled": false,
+      "disk_encryption": false,
+      "stores_sensitive_data": false,
+      "max_critical_patch_age_days": 0,
+      "public_ports": [],
+      "unnecessary_services": []
+    }
+  ],
+  "logging": {
+    "retention_days": 90,
+    "centralized_siem": false
+  },
+  "vulnerability_management": {
+    "scan_frequency_days": 90
+  },
+  "network": {
+    "firewall_default_deny": true,
+    "min_tls_version": "1.2"
+  },
+  "remote_access": {
+    "vpn_mfa": false
+  },
+  "backup": {
+    "frequency_hours": 24,
+    "offline_or_immutable_copy": false,
+    "last_restore_test_days_ago": 400
+  },
+  "incident_response": {
+    "plan_exists": true,
+    "plan_last_reviewed_days_ago": 540
+  },
+  "governance": {
+    "training_completion_rate": 0.72,
+    "baseline_config_documented": false
+  }
+}
