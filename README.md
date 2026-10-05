@@ -2,6 +2,7 @@
 
 [![tests](https://github.com/Edward-Owusu/Nist-800-53-assessment-tool/actions/workflows/tests.yml/badge.svg)](https://github.com/Edward-Owusu/Nist-800-53-assessment-tool/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23148159.svg)](https://doi.org/10.5281/zenodo.23148159)
 
 An open-source tool that checks an organization's system configuration against the **NIST SP 800-53 Rev. 5** low, moderate, or high control baseline and produces a prioritized, auditor-ready remediation report.
 
@@ -144,5 +145,6 @@ Feedback, issues, and contributions are welcome. If you use this tool in your or
 If you use this tool in research or professional work, please cite it using the metadata in [CITATION.cff](CITATION.cff).
 
 ## License
+
 
 [MIT](LICENSE)

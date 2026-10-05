@@ -5,6 +5,7 @@ authors:
   - family-names: Owusu
     given-names: Edward
 version: 0.1.0
+doi: 10.5281/zenodo.23148159
 date-released: 2026-10-04
 license: MIT
 repository-code: "https://github.com/Edward-Owusu/Nist-800-53-assessment-tool"
