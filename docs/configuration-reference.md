@@ -1,6 +1,30 @@
 # Configuration file reference
 
-The tool reads one JSON file describing an organization's systems. Start from `samples/config_template.json`. Any section you cannot provide can be removed; the related checks are reported as not assessed rather than passed.
+The tool reads one JSON file describing an organization's systems. Start from `samples/config_template.json`, or use the fill-in form in the dashboard, which builds this file for you and lets you save it. Any section you cannot provide can be removed; the related checks are reported as not assessed rather than passed.
+
+## parameters (optional)
+
+Organization-defined parameters, keyed by check ID. Leave this section out to use the defaults. Percent values are whole numbers.
+
+```json
+"parameters": {"IAM-03": 60, "IAM-05": 15, "VUL-02": 30}
+```
+
+| Check | Parameter | Default |
+|---|---|---|
+| IAM-03 | Days of inactivity before an account must be disabled | 90 |
+| IAM-05 | Maximum share of enabled accounts that may be privileged (percent) | 10 |
+| IAM-06 | Maximum failed sign-in attempts before lockout | 5 |
+| IAM-07 | Minimum password length (characters) | 12 |
+| IAM-08 | Maximum minutes of inactivity before the device locks | 15 |
+| LOG-02 | Minimum audit log retention (days) | 90 |
+| LOG-03 | Maximum days between audit log reviews | 7 |
+| VUL-01 | Maximum days between vulnerability scans | 30 |
+| VUL-02 | Maximum days to apply critical patches | 15 |
+| BCP-01 | Maximum hours between backups | 24 |
+| BCP-03 | Maximum days since the last backup restore test | 180 |
+| IR-02 | Maximum days since the incident response plan was reviewed | 365 |
+| TRN-01 | Minimum security awareness training completion (percent) | 95 |
 
 ## organization
 

@@ -1,5 +1,9 @@
 {
-  "_comment": "Blank template. Replace example values with your organization's data. Remove any section you cannot provide; related checks will be reported as not assessed.",
+  "_comment": "Blank template. Replace example values with your organization's data. Remove any section you cannot provide; related checks will be reported as not assessed. The optional 'parameters' section sets your own targets for organization-defined parameters; remove it to use the defaults (see docs/configuration-reference.md).",
+  "parameters": {
+    "IAM-03": 90,
+    "IAM-05": 10
+  },
   "organization": {
     "name": "Your organization",
     "sector": "Your sector",
@@ -13,11 +17,30 @@
       "session_lock_minutes": 15
     },
     "accounts": [
-      {"username": "example.user", "enabled": true, "privileged": false, "mfa_enabled": true, "days_since_last_login": 0, "shared": false}
+      {
+        "username": "example.user",
+        "enabled": true,
+        "privileged": false,
+        "mfa_enabled": true,
+        "days_since_last_login": 0,
+        "shared": false
+      }
     ]
   },
   "assets": [
-    {"hostname": "EXAMPLE-01", "type": "server", "os": "Operating system name", "os_supported": true, "logging_enabled": true, "av_enabled": true, "disk_encryption": true, "stores_sensitive_data": false, "max_critical_patch_age_days": 0, "public_ports": [], "unnecessary_services": []}
+    {
+      "hostname": "EXAMPLE-01",
+      "type": "server",
+      "os": "Operating system name",
+      "os_supported": true,
+      "logging_enabled": true,
+      "av_enabled": true,
+      "disk_encryption": true,
+      "stores_sensitive_data": false,
+      "max_critical_patch_age_days": 0,
+      "public_ports": [],
+      "unnecessary_services": []
+    }
   ],
   "logging": {
     "retention_days": 90,

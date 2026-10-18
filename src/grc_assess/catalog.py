@@ -36,6 +36,7 @@ class Rule:
     severity: str
     check: dict[str, Any] = field(hash=False)
     remediation: str = ""
+    odp: dict[str, Any] | None = field(default=None, hash=False, compare=False)
 
 
 @dataclass
@@ -91,6 +92,7 @@ def load_rules(path: str | Path = DEFAULT_RULES, catalog: Catalog | None = None)
                 severity=severity,
                 check=item["check"],
                 remediation=item.get("remediation", ""),
+                odp=item.get("odp"),
             )
         )
     return rules

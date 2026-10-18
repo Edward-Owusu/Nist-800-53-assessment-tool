@@ -20,7 +20,13 @@ Each check in `src/grc_assess/data/rules.json` has an ID, a title, one or more m
 
 Operators: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `between`, `in`, `not_in`, `contains_none`, `is_empty`.
 
-Thresholds marked **ODP** are organization-defined parameters. NIST SP 800-53 leaves many values (such as the inactivity period before accounts are disabled) for each organization to set. The defaults reflect common practice and can be changed by editing the rules file or supplying a custom one with `--rules`.
+Thresholds marked **ODP** are organization-defined parameters. NIST SP 800-53 leaves many values (such as the inactivity period before accounts are disabled) for each organization to set, so a clinic and a water utility can reasonably choose different numbers. The tool ships with defaults that reflect common practice, and each organization can set its own:
+
+- In the dashboard, under **3. Set your own targets** in the sidebar.
+- In the configuration file, in a `parameters` section keyed by check ID, for example `"parameters": {"IAM-03": 60, "IAM-05": 15}`. Percentages are whole numbers (15 means 15%).
+- In code, with `assess(config, parameters={...})`.
+
+Each value must fall within a sensible range defined in the rules file. The check, its title, and its remediation text all update to the chosen value, and every report lists the parameters used and marks any that differ from the default, so a reviewer can see exactly which targets were applied.
 
 ## 3. Check outcomes and missing evidence
 
@@ -42,10 +48,12 @@ A control's status is rolled up from all checks mapped to it:
 | Status | Rule |
 |---|---|
 | Implemented | All assessed checks pass. |
-| Partially implemented | Some assessed checks pass and some fail. |
-| Not implemented | All assessed checks fail. |
+| Partially implemented | Some assessed checks pass and some fail, or every check fails but the evidence shows the control is in place and misses its target. |
+| Not implemented | All assessed checks fail and there is no evidence the control is in place. |
 | Not assessed | No mapped check could be assessed, or no check exists (manual review). |
 | Not applicable | All mapped checks were not applicable. |
+
+A failed check counts as **partly in place** when the evidence shows the control exists but falls short: some items in a collection comply and others don't (MFA on some accounts but not all), a ratio check misses its tolerance (40% of accounts privileged against a 10% target), or a numeric setting exists but is weaker than required (an 8-character password minimum against 12). A failure is not partial when the control is absent, such as a setting of `false`, a value of zero, or a collection where no item complies. This keeps "Not implemented" for controls with no evidence of being in place, instead of using it whenever one check fails.
 
 ## 5. Scores
 
@@ -65,6 +73,10 @@ risk exposure = 100 x (sum of weights of failed checks) / (sum of weights of all
 | Low | 1 | Hygiene issue with limited direct impact |
 
 The overall rating uses these bands: below 10 is Low, 10 to below 25 is Moderate, 25 to below 50 is High, and 50 or more is Critical.
+
+Risk exposure and compliance answer different questions, so they can look inconsistent at first. Compliance counts every check equally. Risk exposure weights them by severity, so an organization that passes about half its checks but fails most of the critical ones will still score high (worse) on risk exposure. The dashboard's **How is the risk score calculated?** panel and every report show the per-severity breakdown behind the number, so the headline score can be traced and defended like every other result.
+
+**Family compliance** is the share of assessed checks in a control family that pass. A family score based on fewer than three checks is marked **limited coverage**, and reports show the count behind every percentage (for example "2 of 2"). One or two passing checks show that those specific checks passed, not that the whole family is in place.
 
 Severities reflect the author's professional judgment about how directly each gap enables common attacks on small and mid-sized organizations, informed by CISA guidance on ransomware and baseline security practices. They are a prioritization aid, not a quantitative risk model. Organizations should adjust them to their own risk appetite.
 

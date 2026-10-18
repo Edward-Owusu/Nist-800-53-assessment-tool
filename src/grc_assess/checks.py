@@ -12,6 +12,12 @@ Missing evidence is handled conservatively, the way an auditor would:
 a missing top-level setting or collection makes the rule NOT_ASSESSED,
 while an item inside a collection that does not report the required
 field counts as a failure ("not evidenced").
+
+A failed check is marked ``partial`` when the evidence shows the control is
+in place but falls short of the target, for example MFA on some accounts but
+not all, or a password minimum of 8 characters against a target of 12. A
+failure is not partial when the control is absent altogether, for example a
+setting that is ``false`` or a numeric setting of zero.
 """
 
 from __future__ import annotations
@@ -34,6 +40,7 @@ class CheckOutcome:
     detail: str
     failing_items: list[str] = field(default_factory=list)
     observed: Any = None
+    partial: bool = False
 
 
 def get_path(data: Any, path: str) -> Any:
@@ -75,6 +82,13 @@ _OP_TEXT = {
     "lt": "less than", "lte": "at most", "between": "between", "in": "one of",
     "not_in": "not one of", "contains_none": "free of", "is_empty": "empty",
 }
+
+
+_NUMERIC_OPS = {"gt", "gte", "lt", "lte", "between"}
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def apply_op(op: str, actual: Any, expected: Any) -> bool:
@@ -123,7 +137,8 @@ def _check_value(config: dict, check: dict) -> CheckOutcome:
     ok = apply_op(check["op"], actual, check.get("value"))
     expect = _expectation(check["op"], check.get("value"))
     detail = f"{check['path']} is {_fmt(actual)}; expected {expect}."
-    return CheckOutcome(PASS if ok else FAIL, detail, observed=actual)
+    partial = (not ok and check["op"] in _NUMERIC_OPS and _is_number(actual) and actual > 0)
+    return CheckOutcome(PASS if ok else FAIL, detail, observed=actual, partial=partial)
 
 
 def _check_each(config: dict, check: dict) -> CheckOutcome:
@@ -146,7 +161,8 @@ def _check_each(config: dict, check: dict) -> CheckOutcome:
     expect = _expectation(check["op"], check.get("value"))
     if failing:
         detail = f"{len(failing)} of {len(in_scope)} items fail: {fld} must be {expect}."
-        return CheckOutcome(FAIL, detail, failing, observed=f"{len(in_scope) - len(failing)}/{len(in_scope)} compliant")
+        return CheckOutcome(FAIL, detail, failing, observed=f"{len(in_scope) - len(failing)}/{len(in_scope)} compliant",
+                            partial=len(failing) < len(in_scope))
     return CheckOutcome(PASS, f"All {len(in_scope)} items have {fld} {expect}.",
                         observed=f"{len(in_scope)}/{len(in_scope)} compliant")
 
@@ -163,7 +179,8 @@ def _check_ratio(config: dict, check: dict) -> CheckOutcome:
     ok = apply_op(check["op"], ratio, check["value"])
     detail = (f"{len(hits)} of {len(base)} ({ratio:.0%}) match; "
               f"expected {_OP_TEXT.get(check['op'], check['op'])} {check['value']:.0%}.")
-    return CheckOutcome(PASS if ok else FAIL, detail, observed=round(ratio, 4))
+    # A ratio check measures how tightly a control is applied, so a failure is partial.
+    return CheckOutcome(PASS if ok else FAIL, detail, observed=round(ratio, 4), partial=not ok)
 
 
 CHECK_TYPES: dict[str, Callable[[dict, dict], CheckOutcome]] = {

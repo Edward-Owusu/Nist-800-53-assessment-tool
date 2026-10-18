@@ -27,6 +27,10 @@ This tool lowers that barrier. It turns the control catalog into concrete, autom
 - Calculates a **compliance percentage** and a **severity-weighted risk exposure score** (see [methodology](docs/methodology.md)).
 - Names the **specific accounts and systems** behind each finding.
 - Treats missing evidence conservatively: it never marks a control as passing without data.
+- **Explains its headline score**: every report and the dashboard show the severity breakdown behind the risk exposure number.
+- Lets each organization **set its own targets** for organization-defined parameters (ODPs), such as the inactivity period before accounts are disabled.
+- Flags control family scores that rest on **too few checks to be meaningful**.
+- Offers a **fill-in form** in the dashboard, so no one has to write JSON to assess their organization.
 - Produces reports in **HTML, Markdown, CSV, and JSON**.
 - Includes an interactive **Streamlit dashboard** and a **command-line tool** suitable for scheduled runs or CI pipelines.
 - The core engine has **no third-party dependencies**, and checks are defined in a plain JSON file that auditors can read and extend without writing code.
@@ -79,6 +83,10 @@ grc-assess my_config.json --fail-on critical
 
 ## Assessing your own organization
 
+The easiest way is the dashboard's **Fill in a form** option: answer the questions, add your accounts and systems in two simple tables, and run the assessment. You can save your answers as a file and load them again later.
+
+To prepare the data as a file instead:
+
 1. Copy `samples/config_template.json`.
 2. Fill it in from your directory, endpoint management, backup, and network tools. The [configuration reference](docs/configuration-reference.md) lists every field and the control it supports.
 3. Remove any section you cannot provide. Those checks are reported as not assessed.
@@ -124,6 +132,14 @@ docs/                                 methodology, configuration reference, exam
 - Collectors that build the configuration file directly from Active Directory, Microsoft Entra ID, and common endpoint tools.
 - Additional controls and checks for operational technology environments.
 - Mappings to the NIST Cybersecurity Framework 2.0 and NIST SP 800-171.
+
+## Privacy
+
+The command-line tool runs entirely on your own computer. The hosted dashboard runs on Streamlit Community Cloud: data you enter or upload is sent to Streamlit's servers, processed in memory for your session, and not saved by this app. For sensitive data, run the dashboard locally (`streamlit run app/streamlit_app.py`) so nothing leaves your machine.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Data and limitations
 
