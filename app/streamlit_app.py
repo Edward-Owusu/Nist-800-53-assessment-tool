@@ -1,12 +1,16 @@
 """Interactive dashboard for the NIST SP 800-53 assessment tool.
 
 Run locally:   streamlit run app/streamlit_app.py
+
+Layout: no sidebar. Data and baseline are chosen in the top row, and the main screen is a map of the
+control families coloured by how well each one is covered.
 """
 
 from __future__ import annotations
 
 import json
 import sys
+from html import escape
 from pathlib import Path
 
 import pandas as pd
@@ -14,7 +18,9 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import ui  # noqa: E402
 from grc_assess import __version__, assess, load_catalog, load_rules  # noqa: E402
 from grc_assess.catalog import BASELINES  # noqa: E402
 from grc_assess.engine import MIN_FAMILY_CHECKS, RISK_BANDS, SEVERITY_WEIGHTS  # noqa: E402
@@ -27,17 +33,26 @@ SAMPLES = {
     "Cold storage warehouse with mature controls (fictional)": ROOT / "samples" / "example_cold_storage_mature.json",
 }
 TEMPLATE = ROOT / "samples" / "config_template.json"
-SEVERITY_ICON = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "⚪"}
 SOURCES = ["Use a sample", "Fill in a form", "Upload my own JSON"]
 
-st.set_page_config(page_title="NIST SP 800-53 Assessment", page_icon="🛡️", layout="wide")
+PAL = ui.Palette(accent="#60A5FA", band="#111C33", band_text="#F1F5F9", band_sub="#A9B8D0",
+                 card="#16213A", line="#2A3A58", ink="#E2E8F0", muted="#94A3B8")
+RATING_COLOR = {"Low": "#22C55E", "Moderate": "#EAB308", "High": "#F97316", "Critical": "#EF4444"}
+STATUS_COLOR = {"Implemented": "#22C55E", "Partially implemented": "#EAB308", "Not implemented": "#EF4444",
+                "Not assessed": "#64748B", "Not applicable": "#475569"}
 
-st.title("NIST SP 800-53 control assessment")
-st.write(
-    "Check a system configuration against the NIST SP 800-53 Rev. 5 low, moderate, or high baseline "
-    "and get a prioritized remediation list. Built for small and mid-sized organizations without a "
-    "dedicated compliance team."
-)
+ui.setup("NIST SP 800-53 control assessment", "Federal security baseline · Rev. 5",
+         "Check a system configuration against the NIST SP 800-53 Rev. 5 low, moderate or high baseline and "
+         "get a prioritized remediation list. Built for small and mid-sized organizations without a dedicated "
+         "compliance team.", "🛡️", PAL)
+st.markdown("""<style>
+.fam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+.fam { background: #16213A; border: 1px solid #2A3A58; border-radius: 12px; padding: 12px 14px; }
+.fam .code { font: 700 22px Georgia, serif; color: #F1F5F9; }
+.fam .name { color: #A9B8D0; font-size: 12.5px; min-height: 32px; }
+.fam .pct { font-size: 13px; color: #E2E8F0; }
+.fam .lim { color: #EAB308; font-size: 11.5px; }
+</style>""", unsafe_allow_html=True)
 
 ODP_RULES = [r for r in load_rules(catalog=load_catalog()) if r.odp]
 
@@ -171,41 +186,58 @@ def guided_form() -> dict | None:
     return st.session_state.get("form_config")
 
 
-with st.sidebar:
-    st.header("1. Choose data")
-    source = st.radio("Configuration source", SOURCES, label_visibility="collapsed")
-    config: dict | None = None
+
+
+def family_color(pct: float | None) -> str:
+    if pct is None:
+        return "#64748B"
+    if pct >= 90:
+        return "#22C55E"
+    if pct >= 70:
+        return "#84CC16"
+    if pct >= 50:
+        return "#EAB308"
+    if pct >= 25:
+        return "#F97316"
+    return "#EF4444"
+
+
+# ---- Top row: data, baseline, targets ---------------------------------------------------------------
+top1, top2, top3, top4 = st.columns([2.2, 2.6, 1.3, 1.2], vertical_alignment="bottom")
+with top1:
+    st.caption("1 · Where the data comes from")
+    source = ui.choose("Configuration source", SOURCES, key="source")
+config: dict | None = None
+with top2:
     if source == "Use a sample":
-        choice = st.selectbox("Sample organization", list(SAMPLES))
+        st.caption("2 · Sample organization")
+        choice = st.selectbox("Sample organization", list(SAMPLES), label_visibility="collapsed")
         config = json.loads(SAMPLES[choice].read_text(encoding="utf-8"))
     elif source == "Upload my own JSON":
-        upload = st.file_uploader("Configuration file (.json)", type=["json"])
-        if TEMPLATE.exists():
-            st.download_button("Download blank template", TEMPLATE.read_bytes(),
-                               file_name="config_template.json", mime="application/json")
+        st.caption("2 · Your configuration file")
+        upload = st.file_uploader("Configuration file (.json)", type=["json"], label_visibility="collapsed")
         if upload is not None:
             try:
                 config = json.loads(upload.getvalue().decode("utf-8"))
             except (UnicodeDecodeError, json.JSONDecodeError) as exc:
                 st.error(f"This file is not valid JSON: {exc}. Fix the file and upload it again.")
     else:
-        st.caption("Fill in the form on the right, then select Run assessment.")
-
-    st.header("2. Choose baseline")
+        st.caption("2 · Answer the form below, then select Run assessment")
+        st.markdown("<div class='g-empty'>No file needed.</div>", unsafe_allow_html=True)
+with top3:
+    st.caption("3 · Baseline")
     default_baseline = ((config or {}).get("organization", {}).get("baseline") or "moderate").lower()
     baseline = st.selectbox("Control baseline", BASELINES,
                             index=BASELINES.index(default_baseline) if default_baseline in BASELINES else 1,
-                            format_func=str.title)
-
-    st.header("3. Set your own targets")
-    st.caption(
-        "NIST SP 800-53 lets each organization set some values itself. These are called "
-        "organization-defined parameters (ODPs). The defaults reflect common practice; change any "
-        "that don't fit your organization."
-    )
-    file_params = (config or {}).get("parameters") or {}
-    overrides: dict[str, float] = {}
-    with st.expander("Organization-defined parameters"):
+                            format_func=str.title, label_visibility="collapsed")
+file_params = (config or {}).get("parameters") or {}
+overrides: dict[str, float] = {}
+with top4:
+    st.caption("4 · Your own targets")
+    with st.popover("Set targets", use_container_width=True):
+        st.markdown("**Organization-defined parameters (ODPs)**")
+        st.caption("NIST SP 800-53 lets each organization set some values itself. The defaults reflect common "
+                   "practice; change any that don't fit your organization.")
         for rule in ODP_RULES:
             odp = rule.odp
             default = default_value(rule)
@@ -215,13 +247,11 @@ with st.sidebar:
             value = st.number_input(
                 f"{odp['label']} ({odp['unit']})", min_value=low, max_value=high, value=start, step=1.0,
                 key=f"odp_{rule.id}", help=f"Check {rule.id}. Default: {format_value(default, odp['unit'])}.")
-            # Every value is passed on, so the sidebar always wins over values in an uploaded file.
+            # Every value is passed on, so these targets always win over values in an uploaded file.
             overrides[rule.id] = int(value) if float(value).is_integer() else value
-
-    st.caption(
-        f"grc_assess {__version__}. Your data is processed in memory on Streamlit Community Cloud and "
-        "is not saved. For sensitive data, run the tool on your own computer using the code on GitHub."
-    )
+        if TEMPLATE.exists():
+            st.download_button("Download blank JSON template", TEMPLATE.read_bytes(),
+                               file_name="config_template.json", mime="application/json")
 
 if source == "Fill in a form":
     config = guided_form()
@@ -231,8 +261,10 @@ if source == "Fill in a form":
                            help="Upload this file later with \"Upload my own JSON\" to pick up where you left off.")
 
 if config is None:
-    if source != "Fill in a form":
-        st.info("Upload a configuration file in the sidebar, or switch to a sample, to see results.")
+    if source == "Upload my own JSON":
+        st.info("Upload a configuration file above, or switch to a sample, to see results. "
+                "The blank template is under Set targets.")
+    ui.footer("grc_assess", __version__, "Nist-800-53-assessment-tool", DISCLAIMER)
     st.stop()
 
 try:
@@ -242,19 +274,84 @@ except ValueError as exc:
     st.stop()
 rc = result.rule_counts
 
-st.subheader(f"{result.organization}")
+# ---- Summary strip ---------------------------------------------------------------------------------
+st.markdown(f"<div class='g-sec'>{escape(result.organization)}</div>", unsafe_allow_html=True)
 st.caption(f"{result.sector}. {result.baseline.title()} baseline.")
+left, right = st.columns([1, 2.6], vertical_alignment="center")
+with left:
+    color = RATING_COLOR.get(result.risk_rating, PAL.accent)
+    st.markdown(ui.gauge(result.risk_score, f"{result.risk_rating} risk", color, PAL,
+                         caption="Risk exposure, higher is worse"), unsafe_allow_html=True)
+with right:
+    ui.tiles([
+        ("n/a" if result.compliance_pct is None else f"{result.compliance_pct:.1f}%", "Automated checks passed"),
+        (rc["FAIL"], "Failed checks", "#EF4444"),
+        (rc["NOT_ASSESSED"], "Checks lacking data", "#64748B"),
+        (len(result.families), "Control families scored"),
+    ], PAL)
+    if any(p.customized for p in result.parameters):
+        st.caption("Custom targets in use: " + "; ".join(
+            f"{p.rule_id} {p.display} (default {format_value(p.default, p.unit)})"
+            for p in result.parameters if p.customized) + ".")
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric(f"Risk exposure: {result.risk_rating}", f"{result.risk_score:.0f} / 100",
-          help="Higher is worse. See \"How is the risk score calculated?\" below.")
-c2.metric("Automated checks passed",
-          "n/a" if result.compliance_pct is None else f"{result.compliance_pct:.1f}%",
-          help="Every assessed check counts equally here, whatever its severity.")
-c3.metric("Failed checks", rc["FAIL"])
-c4.metric("Checks lacking data", rc["NOT_ASSESSED"])
+VIEWS = ["Family map", "Findings", "Control status", "All checks", "How the score works"]
+view = ui.choose("View", VIEWS, key="view")
 
-with st.expander("How is the risk score calculated?"):
+if view == "Family map":
+    ui.section("Control families", f"Each tile is one NIST control family, coloured by the share of its checks "
+               f"that passed. A family scored on fewer than {MIN_FAMILY_CHECKS} checks is marked limited coverage.")
+    tiles_html = []
+    for x in result.families:
+        col = family_color(x.compliance_pct)
+        pct = "Not assessed" if x.compliance_pct is None else f"{x.compliance_pct:.0f}% · {x.passed_text}"
+        lim = f"<div class='lim'>Limited coverage</div>" if x.limited_coverage else ""
+        tiles_html.append(
+            f"<div class='fam' style='border-top:5px solid {col}'><div class='code'>{escape(x.family)}</div>"
+            f"<div class='name'>{escape(x.family_name)}</div>{ui.bar(x.compliance_pct, col)}"
+            f"<div class='pct'>{escape(pct)}</div>{lim}</div>")
+    st.markdown(f"<div class='fam-grid'>{''.join(tiles_html)}</div>", unsafe_allow_html=True)
+    st.caption("Green 90% or more · lime 70% · yellow 50% · orange 25% · red below 25% · grey not assessed.")
+
+elif view == "Findings":
+    sevs = ["critical", "high", "medium", "low"]
+    present = [s for s in sevs if any(f.severity == s for f in result.findings)]
+    ui.section(f"{len(result.findings)} findings, most severe first")
+    if not result.findings:
+        st.success("No failed checks for this baseline.")
+    keep = ui.multi("Severity", present, key="sev", format_func=str.title)
+    for f in result.findings:
+        if f.severity not in keep:
+            continue
+        body = f"<div class='d'><b>Observation:</b> {escape(f.detail)}</div>"
+        if f.failing_items:
+            body += f"<div class='s'>Affected: {escape(', '.join(f.failing_items))}</div>"
+        body += f"<div class='f'><b>Fix:</b> {escape(f.remediation)}</div>"
+        ui.card(f"<div class='h'>{ui.sev_pill(f.severity)}{escape(f.rule_id)} · {escape(f.title)}</div>"
+                f"<div class='s'>Controls {escape(', '.join(f.controls))}</div>", body,
+                accent=ui.SEV_COLORS[f.severity])
+
+elif view == "Control status":
+    ui.section("Control status", "Partially implemented means the control is in place but misses its target, "
+               "for example MFA on some accounts but not all. Not implemented means there is no evidence the "
+               "control is in place.")
+    counts = {}
+    for c in result.controls:
+        counts[c.status] = counts.get(c.status, 0) + 1
+    ui.tiles([(n, s, STATUS_COLOR.get(s, PAL.accent)) for s, n in counts.items()], PAL)
+    st.dataframe(
+        pd.DataFrame([{"Control": c.control_id, "Title": c.title, "Family": c.family, "Status": c.status,
+                       "Evidence checks": ", ".join(c.rules) or "Manual review"} for c in result.controls]),
+        hide_index=True, use_container_width=True)
+
+elif view == "All checks":
+    ui.section("Every automated check")
+    st.dataframe(
+        pd.DataFrame([{"Check": r.rule_id, "Title": r.title, "Severity": r.severity.title(),
+                       "Result": result_text(r), "Detail": r.detail} for r in result.rules]),
+        hide_index=True, use_container_width=True)
+
+else:
+    ui.section("How the risk score is calculated")
     st.write(result.score_explanation)
     st.dataframe(pd.DataFrame(
         [{"Severity": s.severity.title(), "Weight": s.weight, "Checks assessed": s.assessed,
@@ -267,63 +364,13 @@ with st.expander("How is the risk score calculated?"):
     st.write("Rating bands: " + ", ".join(
         f"{label} {lo} to below {hi}" if hi <= 100 else f"{label} {lo} or more"
         for lo, (hi, label) in zip(lows, RISK_BANDS)) + ".")
-    st.caption(
-        "Severity weights: " + ", ".join(f"{k} {v}" for k, v in SEVERITY_WEIGHTS.items())
-        + ". Full method: docs/methodology.md on GitHub.")
+    st.caption("Severity weights: " + ", ".join(f"{k} {v}" for k, v in SEVERITY_WEIGHTS.items())
+               + ". Full method: docs/methodology.md on GitHub.")
 
-if any(p.customized for p in result.parameters):
-    st.caption("Custom targets in use: " + "; ".join(
-        f"{p.rule_id} {p.display} (default {format_value(p.default, p.unit)})"
-        for p in result.parameters if p.customized) + ".")
-
-tab_findings, tab_families, tab_controls, tab_checks = st.tabs(
-    ["Findings", "By control family", "Control status", "All checks"])
-
-with tab_findings:
-    if not result.findings:
-        st.success("No failed checks for this baseline.")
-    for f in result.findings:
-        with st.expander(f"{SEVERITY_ICON[f.severity]} {f.severity.title()}: {f.rule_id} {f.title}"):
-            st.markdown(f"**Controls:** {', '.join(f.controls)}")
-            st.markdown(f"**Observation:** {f.detail}")
-            if f.failing_items:
-                st.markdown(f"**Affected:** {', '.join(f.failing_items)}")
-            st.markdown(f"**Remediation:** {f.remediation}")
-
-with tab_families:
-    st.caption(
-        f"A family scored on fewer than {MIN_FAMILY_CHECKS} checks is marked as limited coverage. "
-        "One or two checks can't show that a whole family is in place, so treat those percentages with care.")
-    fam_df = pd.DataFrame(
-        [{"Family": f"{x.family} {x.family_name}", "Checks passed": x.passed_text,
-          "Compliance %": x.compliance_pct, "Coverage": x.coverage_note} for x in result.families]
-    )
-    chart_df = fam_df.dropna(subset=["Compliance %"]).set_index("Family")[["Compliance %"]]
-    if not chart_df.empty:
-        st.bar_chart(chart_df, horizontal=True)
-    st.dataframe(fam_df, hide_index=True)
-
-with tab_controls:
-    st.caption(
-        "Partially implemented means the control is in place but misses its target, for example MFA on "
-        "some accounts but not all. Not implemented means there is no evidence the control is in place.")
-    st.dataframe(
-        pd.DataFrame([{"Control": c.control_id, "Title": c.title, "Status": c.status,
-                       "Evidence checks": ", ".join(c.rules) or "Manual review"} for c in result.controls]),
-        hide_index=True)
-
-with tab_checks:
-    st.dataframe(
-        pd.DataFrame([{"Check": r.rule_id, "Title": r.title, "Severity": r.severity.title(),
-                       "Result": result_text(r), "Detail": r.detail} for r in result.rules]),
-        hide_index=True)
-
-st.subheader("Download the report")
 stem = f"assessment_{result.baseline}"
-d1, d2, d3, d4 = st.columns(4)
-d1.download_button("HTML report", to_html(result), f"{stem}.html", "text/html")
-d2.download_button("Markdown", to_markdown(result), f"{stem}.md", "text/markdown")
-d3.download_button("CSV findings", to_csv(result), f"{stem}.csv", "text/csv")
-d4.download_button("JSON results", to_json(result), f"{stem}.json", "application/json")
-
-st.caption(DISCLAIMER)
+ui.downloads([("HTML report", to_html(result), f"{stem}.html", "text/html"),
+              ("Markdown", to_markdown(result), f"{stem}.md", "text/markdown"),
+              ("CSV findings", to_csv(result), f"{stem}.csv", "text/csv"),
+              ("JSON results", to_json(result), f"{stem}.json", "application/json")])
+ui.footer("grc_assess", __version__, "Nist-800-53-assessment-tool",
+          DISCLAIMER + " For sensitive data, run the tool on your own computer using the code on GitHub.")
