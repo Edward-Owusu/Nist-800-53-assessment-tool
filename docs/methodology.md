@@ -22,7 +22,7 @@ Operators: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`, `between`, `in`, `not_in`, `con
 
 Thresholds marked **ODP** are organization-defined parameters. NIST SP 800-53 leaves many values (such as the inactivity period before accounts are disabled) for each organization to set, so a clinic and a water utility can reasonably choose different numbers. The tool ships with defaults that reflect common practice, and each organization can set its own:
 
-- In the dashboard, under **3. Set your own targets** in the sidebar.
+- In the dashboard, under **Set targets** in the top row.
 - In the configuration file, in a `parameters` section keyed by check ID, for example `"parameters": {"IAM-03": 60, "IAM-05": 15}`. Percentages are whole numbers (15 means 15%).
 - In code, with `assess(config, parameters={...})`.
 
