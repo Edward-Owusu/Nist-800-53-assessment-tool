@@ -167,3 +167,12 @@ def footer(tool: str, version: str, repo: str, disclaimer: str = "") -> None:
         f"Part of a series of <a href='{SERIES_URL}'>free, open-source GRC tools</a>. "
         f"Data you enter is processed in memory for this session and not saved."
         f"{'<br>' + escape(disclaimer) if disclaimer else ''}</div>", unsafe_allow_html=True)
+
+
+def source_label(option: str) -> str:
+    """Short button text for the data-source choice, so all three options fit on one line."""
+    if option.startswith("Use a sample"):
+        return "Sample"
+    if option.startswith("Fill in"):
+        return "Form"
+    return "Upload"

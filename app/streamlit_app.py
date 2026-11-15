@@ -203,10 +203,10 @@ def family_color(pct: float | None) -> str:
 
 
 # ---- Top row: data, baseline, targets ---------------------------------------------------------------
-top1, top2, top3, top4 = st.columns([2.2, 2.6, 1.3, 1.2], vertical_alignment="bottom")
+top1, top2, top3, top4 = st.columns([2.2, 2.6, 1.3, 1.2], vertical_alignment="top")
 with top1:
     st.caption("1 · Where the data comes from")
-    source = ui.choose("Configuration source", SOURCES, key="source")
+    source = ui.choose("Configuration source", SOURCES, key="source", format_func=ui.source_label)
 config: dict | None = None
 with top2:
     if source == "Use a sample":
